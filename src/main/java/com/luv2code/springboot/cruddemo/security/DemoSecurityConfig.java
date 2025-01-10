@@ -1,5 +1,6 @@
 package com.luv2code.springboot.cruddemo.security;
 
+import org.springframework.boot.autoconfigure.batch.BatchProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -42,15 +43,36 @@ public class DemoSecurityConfig {
 //    }
 
 
+
+
     //add support for JDBC
+//    @Bean
+//    public UserDetailsManager userDetailsManager(DataSource dataSource){
+//        //DataSource is autoconfigured by Spring Boot, only injected by us.
+//
+//        //tells spring to use Jdbc authentication with our dataSource :)
+//        return new JdbcUserDetailsManager(dataSource);
+//        //when spring security looks up dataSource, it looks we already have defined tables, so it picks that data up.
+//
+//    }
+
+
     @Bean
     public UserDetailsManager userDetailsManager(DataSource dataSource){
-        //DataSource is autoconfigured by Spring Boot, only injected by us.
 
-        //tells spring to use Jdbc authentication with our dataSource :)
-        return new JdbcUserDetailsManager(dataSource);
-        //when spring security looks up dataSource, it looks we already have defined tables, so it picks that data up.
+        JdbcUserDetailsManager jdbcUserDetailsManager = new JdbcUserDetailsManager(dataSource);
 
+        //define query to retrieve user by username
+        jdbcUserDetailsManager.setUsersByUsernameQuery(
+                "select user_id, pw, active from members where user_id=?");
+
+        //define query to retrieve roles of user by username
+        jdbcUserDetailsManager.setUsersByUsernameQuery(
+                "select user_id, role from roles where user_id=?"
+        );
+        //here user_id is passed in by login form.
+
+        return jdbcUserDetailsManager;
     }
 
 
